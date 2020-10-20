@@ -21,14 +21,15 @@ namespace FactoryPRO.PM.Core.API.Services
         private ITaskRepository _tasktRepository;
         private IListRepository  _listRepository;
         private IMapper _mapper;
+        private ExternalService _externalService;
 
-       /// <summary>
-       /// 
-       /// </summary>
-       /// <param name="projectRepository"></param>
-       /// <param name="mapper"></param>
-       /// <param name="tasktRepository"></param>
-       /// <param name="listRepository"></param>
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="projectRepository"></param>
+        /// <param name="mapper"></param>
+        /// <param name="tasktRepository"></param>
+        /// <param name="listRepository"></param>
         public ProjectService(IProjectRepository projectRepository, IMapper mapper, ITaskRepository tasktRepository, IListRepository listRepository)
         {
             _projectRepository = projectRepository;
@@ -47,8 +48,19 @@ namespace FactoryPRO.PM.Core.API.Services
             TblProjects projects = _mapper.Map<TblProjects>(fullProject.projectDTO);
             projects.CreatedDate = DateTime.UtcNow;
             projects.ProjectId = Guid.NewGuid().ToString();
+
             List<TblCustomFields> customFields = CastObject<CustomFieldsDTO, TblCustomFields>(fullProject.customFieldsDTO);
             projects = _projectRepository.CreateProject(projects, customFields);
+
+
+            List<CustomFieldsDTO> customfieldsdto = new List<CustomFieldsDTO>();
+            customfieldsdto = fullProject.customFieldsDTO;
+            customfieldsdto.ForEach(x => x.EntityId = projects.ProjectId);
+
+            customfieldsdto = _externalService.CreateCustomFields(customfieldsdto).Result;
+            projects.TblCustomFields = CastObject<CustomFieldsDTO, TblCustomFields>(customfieldsdto);
+            
+
             ProjectDTO projectdto = _mapper.Map<ProjectDTO>(projects);
 
             return projectdto;

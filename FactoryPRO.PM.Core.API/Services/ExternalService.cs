@@ -94,7 +94,7 @@ namespace FactoryPRO.PM.Core.API.Services
             return FileName;
         }
 
-        public async Task<List<CustomFieldsDTO>> CreateCustomFields(List<CustomFieldsDTO> customFields, string ProductID)
+        public async Task<List<CustomFieldsDTO>> CreateCustomFields(List<CustomFieldsDTO> customFields)
         {
             //Queue
             try
@@ -105,8 +105,8 @@ namespace FactoryPRO.PM.Core.API.Services
                     var dataAsString = JsonConvert.SerializeObject(customFields);
                     var content = new StringContent(dataAsString);
                     content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-                    HttpResponseMessage response = client.PostAsync("http://132.148.242.138/FPDMS/api/SaveCustomFields?EntityID=" + ProductID.ToString(), content).Result;
-
+                    //HttpResponseMessage response = client.PostAsync("http://132.148.242.138/FPDMS/api/SaveCustomFields?EntityID=" + ProductID.ToString(), content).Result;
+                    HttpResponseMessage response = client.PostAsync("http://132.148.242.138/FPUMS/api/customfields/SaveCustomFields", content).Result;
                     if (response.IsSuccessStatusCode)
                     {
                         customFields = _autoMapper.Map<List<CustomFieldsDTO>>(await response.Content.ReadAsStringAsync());
